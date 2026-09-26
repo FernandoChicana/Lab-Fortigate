@@ -1,0 +1,28 @@
+# Copy to terraform.tfvars and edit. Keep SECRETS out of this file — pass them
+# as environment variables instead:
+#
+#   export TF_VAR_fortigate_admin_pw='...'
+#   export TF_VAR_fortianalyzer_admin_pw='...'
+#   export TF_VAR_fabric_psk='...'
+#   export TF_VAR_ssh_pub_key='labadmin:ssh-ed25519 AAAA... you@host'
+#   export TF_VAR_fortiedr_registration_key='...'   # optional
+
+project_id = "my-fortilab-project"
+region     = "us-east1"
+zone       = "us-east1-b"
+
+# Lock management access to YOUR public IP. Never 0.0.0.0/0 on a running box.
+admin_source_cidrs = ["203.0.113.7/32"]
+
+# --- cost / phasing knobs ---------------------------------------------------
+# Start FortiGate-only to validate, then flip these on:
+deploy_fortianalyzer = true
+deploy_lab_hosts     = true
+
+# --- images (verify FAZ image name for your region before applying) ---------
+# gcloud compute images list --project fortigcp-project-001 --filter='name~faz'
+# fortianalyzer_image = "projects/fortigcp-project-001/global/images/<exact-byol-image>"
+
+# --- FortiEDR (cloud console + collector on the victim) ---------------------
+# fortiedr_aggregator              = "aggregator.yourtenant.fortiedr.com"
+# fortiedr_collector_installer_url = "https://storage.googleapis.com/.../FortiEDRCollectorInstaller.deb?...signed..."
