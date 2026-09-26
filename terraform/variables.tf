@@ -136,44 +136,51 @@ variable "deploy_lab_hosts" {
 
 variable "victim_machine_type" {
   type        = string
-  default     = "e2-small"
-  description = "Victim VM machine type."
+  default     = "e2-medium"
+  description = "Victim VM machine type. Windows Server 2019 needs ~2 vCPU / 4 GB minimum — e2-medium is the cheapest comfortable shape."
 }
 
 variable "attacker_machine_type" {
   type        = string
-  default     = "e2-small"
-  description = "Attacker VM machine type."
+  default     = "e2-medium"
+  description = "Attacker VM machine type. Metasploit/Caldera are heavy; e2-medium is comfortable, e2-small works for light use."
 }
 
 variable "victim_image" {
   type        = string
-  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts"
-  description = "Victim VM base image."
+  default     = "projects/windows-cloud/global/images/family/windows-2019"
+  description = "Victim VM base image. Default: Windows Server 2019 (deliberately weakened by scripts/victim-vulnerable.ps1). GCP does not offer truly old Windows (2003/2008); 2019 is the oldest current family."
+}
+
+variable "victim_lab_password" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Password for the victim's 'labadmin' local admin account (RDP over IAP). Deliberately weak for the lab. Set via TF_VAR_victim_lab_password; if empty the script uses a weak fallback."
 }
 
 variable "attacker_image" {
   type        = string
   default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts"
-  description = "Attacker VM base image (install your own offensive tooling; do NOT bake exploit payloads into this repo)."
+  description = "Attacker VM base image. Default: Ubuntu 22.04; scripts/attacker-provision.sh installs the pentest + adversary-emulation toolkit (no malware/exploit payloads committed)."
 }
 
 variable "ssh_pub_key" {
   type        = string
-  description = "SSH public key (format: 'user:ssh-ed25519 AAAA... comment') injected into the lab hosts. Set via TF_VAR_ssh_pub_key."
+  description = "SSH public key (format: 'user:ssh-ed25519 AAAA... comment') injected into the attacker VM. Set via TF_VAR_ssh_pub_key."
 }
 
 # --- FortiEDR collector (installed on the victim via startup script) ---------
 variable "fortiedr_collector_installer_url" {
   type        = string
   default     = ""
-  description = "URL (e.g. a private GCS object signed URL) to the FortiEDR Linux Collector installer. Leave empty to skip collector auto-install and do it manually. FortiEDR itself is a cloud-hosted console (30-day trial) — there is no FortiEDR VM in this stack."
+  description = "URL (e.g. a private GCS signed URL) to the FortiEDR WINDOWS Collector installer (.exe). Leave empty to install the collector manually on the victim. FortiEDR's management is a cloud-hosted console (trial, ~30 days) — there is no FortiEDR VM in this stack."
 }
 
 variable "fortiedr_aggregator" {
   type        = string
   default     = ""
-  description = "FortiEDR Aggregator address (from your FortiEDR cloud console) the collector registers to."
+  description = "FortiEDR Aggregator address (from your FortiEDR cloud console) the collector registers to. Referenced in docs; collector flags are set in scripts/victim-vulnerable.ps1."
 }
 
 variable "fortiedr_registration_key" {

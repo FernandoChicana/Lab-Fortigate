@@ -4,8 +4,9 @@
 #   export TF_VAR_fortigate_admin_pw='...'
 #   export TF_VAR_fortianalyzer_admin_pw='...'
 #   export TF_VAR_fabric_psk='...'
-#   export TF_VAR_ssh_pub_key='labadmin:ssh-ed25519 AAAA... you@host'
-#   export TF_VAR_fortiedr_registration_key='...'   # optional
+#   export TF_VAR_ssh_pub_key='labadmin:ssh-ed25519 AAAA... you@host'   # attacker SSH
+#   export TF_VAR_victim_lab_password='...'          # Windows victim labadmin (weak on purpose)
+#   export TF_VAR_fortiedr_registration_key='...'    # optional (FortiEDR collector)
 
 project_id = "my-fortilab-project"
 region     = "us-east1"
