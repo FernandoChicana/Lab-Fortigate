@@ -101,4 +101,6 @@ FortiEDR onboarding, and the hands-on exercises.
 > repo contains **no** malware or exploit code. Only detonate samples you're
 > authorized to use, against the victim VM, inside this isolated network.
 
-See **[docs/lab-guide.md](docs/lab-guide.md)** for the full guide.
+See **[docs/lab-guide.md](docs/lab-guide.md)** for the full guide, and
+**[docs/arquitectura-y-costos.md](docs/arquitectura-y-costos.md)** for the architecture,
+cost estimates, and free-tier analysis.
