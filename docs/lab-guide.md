@@ -121,37 +121,75 @@ terraform output
 
 ---
 
-## 6. Exercises (authorized testing only)
+## 6. Live demo — exercises (authorized testing only)
+
+Fixed lab IPs (set by Terraform): **attacker `10.10.10.10`**, **victim `10.10.10.20`**,
+gateway/FortiGate `10.10.10.1`.
 
 Reach the hosts over IAP (no public IPs on the LAN):
 
 ```bash
+# Attacker (Ubuntu) — SSH
 gcloud compute ssh fortilab-attacker --tunnel-through-iap --zone <zone>
-gcloud compute ssh fortilab-victim  --tunnel-through-iap --zone <zone>
+
+# Victim (Windows) — RDP tunnel, then connect an RDP client to localhost:3389 as labadmin
+gcloud compute start-iap-tunnel fortilab-victim 3389 --local-host-port=localhost:3389 --zone <zone>
 ```
 
-### 6a. IPS / intrusion — safe signature test
-From the attacker, generate traffic that trips IPS without real exploitation:
-- Port/vuln scanning of the victim (e.g. `nmap -sV --script vuln`) → expect IPS
-  reconnaissance/probe signatures.
-- Fetch the **EICAR** test string over HTTP through the FortiGate → the `lab-av`
-  profile blocks it (AntiVirus, not real malware):
-  ```
-  curl http://www.eicar.org/download/eicar.com.txt
-  ```
-  Confirm the **Virus** log in FortiGate → forwarded to FAZ FortiView.
+> The attacker has an **un-inspected** egress policy on the FortiGate, so its tool
+> downloads (Metasploit, etc.) are not blocked. The **victim**'s traffic IS
+> inspected — that is where detections come from. Give the attacker a couple of
+> minutes after boot for `attacker-provision.sh` to finish (log:
+> `/var/log/attacker-provision.log`).
 
-### 6b. Malware behavior — detonation
-- Run authorized samples **only on the victim**, inside the isolated LAN.
-- Watch three places light up:
-  - **FortiGate** FortiView (IPS/AV/AppCtrl, C2 callbacks blocked at egress),
-  - **FortiAnalyzer** (correlated timeline, reports),
-  - **FortiEDR** (process/behavioral detection + isolation on the endpoint).
-- Trigger the **quarantine** automation and confirm the victim's source IP is
-  blocked at the FortiGate and/or isolated by FortiEDR.
+### Demo 0 — confirm the pipeline is live
+On the attacker, verify traffic reaches the victim and the FortiGate sees the LAN:
+```bash
+ping 10.10.10.20
+nmap -Pn 10.10.10.20
+```
+In **FortiGate → Log & Report → Forward Traffic** and **FortiAnalyzer → FortiView**
+you should see the sessions. If FAZ shows them, logging is wired.
 
-### 6c. Verify the full pipeline
-1. Detonate/scan → 2. FortiGate blocks+logs → 3. FAZ shows the event →
+### Demo 1 — AntiVirus (EICAR, 100% safe, not malware)
+The **EICAR** string is an industry-standard AV test file — harmless. Fetch it so
+it crosses the inspected path toward the victim, or download on the victim:
+```bash
+# from the victim (PowerShell) — through the inspected policy:
+curl.exe https://secure.eicar.org/eicar.com.txt -o eicar.txt
+```
+Expect a **Virus/AV block** in FortiGate → FortiView → forwarded to FAZ. This is
+the cleanest "it works" demo.
+
+### Demo 2 — reconnaissance & IPS (intrusion)
+From the attacker against the victim:
+```bash
+nmap -sV -O 10.10.10.20                      # service/OS fingerprinting
+nmap --script smb-protocols,smb-os-discovery 10.10.10.20
+nmap --script smb-vuln-ms17-010 10.10.10.20  # checks the SMBv1 weakness (no exploit)
+```
+Expect **IPS reconnaissance / scan** signatures and **Application Control** events
+in FortiGate, visible in FAZ FortiView. (The victim has SMBv1 on by design.)
+
+### Demo 3 — endpoint detection with safe adversary emulation (FortiEDR)
+Use **Atomic Red Team** / **MITRE Caldera** (installed on the attacker under
+`/opt/adversary-emulation/`) to run ATT&CK-mapped techniques **on the victim**.
+These emulate malware behavior (persistence, credential-access, discovery) WITHOUT
+real malware, so they are safe and repeatable. Examples of techniques to run on the
+Windows victim: T1059 (command/scripting), T1053 (scheduled task), T1218 (LOLBins).
+Watch **FortiEDR** flag the behavior and (with the quarantine automation) isolate
+the host; the alert can also be forwarded to **FortiAnalyzer**.
+
+> If you later detonate a real, authorized sample, do it **only on the victim**,
+> inside this isolated LAN, and never expose the VM to the internet.
+
+### Demo 4 — response / quarantine
+Trigger the `ips-quarantine` automation stitch (from an IPS hit) and confirm the
+offending source is **quarantined at the FortiGate** and/or **isolated by
+FortiEDR** (Security Fabric → Automation shows the action firing).
+
+### Verify the full pipeline
+1. Scan/emulate → 2. FortiGate blocks+logs → 3. FAZ shows the correlated event →
 4. FortiEDR shows the endpoint detection → 5. quarantine/isolation fires.
 
 ---

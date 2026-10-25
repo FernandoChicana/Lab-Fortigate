@@ -121,6 +121,12 @@ variable "labels" {
   default     = { app = "fortilab", lifecycle = "ephemeral" }
 }
 
+variable "attacker_ip" {
+  type        = string
+  description = "Attacker LAN IP that gets an un-inspected egress policy (so pentest tool downloads are not blocked by AV/IPS). Set empty to skip the exemption."
+  default     = ""
+}
+
 variable "cloudinit_path" {
   type        = string
   description = "Path to the FortiGate cloud-init template."

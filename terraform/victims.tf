@@ -31,6 +31,7 @@ resource "google_compute_instance" "victim" {
 
   network_interface {
     subnetwork = module.network.lan_subnet_id
+    network_ip = var.victim_lan_ip
     # no access_config -> no public IP; egress via FortiGate only
   }
 
@@ -65,6 +66,7 @@ resource "google_compute_instance" "attacker" {
 
   network_interface {
     subnetwork = module.network.lan_subnet_id
+    network_ip = var.attacker_lan_ip
   }
 
   metadata = {

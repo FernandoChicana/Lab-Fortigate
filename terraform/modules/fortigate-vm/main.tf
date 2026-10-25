@@ -30,6 +30,7 @@ locals {
       faz_serial        = var.faz_serial
       fabric_group_name = var.fabric_group_name
       fabric_psk        = var.fabric_psk
+      attacker_ip       = var.attacker_ip
     }),
     "\n", "\r\n"
   )

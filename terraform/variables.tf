@@ -63,6 +63,18 @@ variable "dhcp_end" {
   description = "FortiGate DHCP pool end on the LAN."
 }
 
+variable "attacker_lan_ip" {
+  type        = string
+  default     = "10.10.10.10"
+  description = "Fixed LAN IP for the attacker (outside the DHCP pool). The FortiGate gives this host an UN-inspected egress policy so its tool downloads are not blocked by AV/IPS."
+}
+
+variable "victim_lan_ip" {
+  type        = string
+  default     = "10.10.10.20"
+  description = "Fixed LAN IP for the victim (outside the DHCP pool). Its traffic goes through the inspected policy."
+}
+
 # --- FortiGate ---------------------------------------------------------------
 variable "fortigate_image" {
   type        = string

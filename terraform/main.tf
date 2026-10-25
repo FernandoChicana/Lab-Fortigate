@@ -45,6 +45,7 @@ module "fortigate" {
   admin_pw              = var.fortigate_admin_pw
   faz_ip                = var.deploy_fortianalyzer ? module.fortianalyzer[0].internal_ip : ""
   fabric_psk            = var.fabric_psk
+  attacker_ip           = var.deploy_lab_hosts ? var.attacker_lan_ip : ""
   service_account_email = data.google_compute_default_service_account.default.email
   cloudinit_path        = "${path.module}/cloudinit/fortigate-lab.conf"
   labels                = var.labels
